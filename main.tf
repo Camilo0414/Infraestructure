@@ -89,7 +89,7 @@ resource "aws_network_acl" "acl-public-training" {
 	count = "${length(var.subnet_cidrs_public)}"
 	
 	vpc_id = "${aws_vpc.vpc-training.id}"
-	subnet_id = "${element(aws_subnet.subnet-public-training.*.id, count.index)}"
+	subnet_ids = ["${element(aws_subnet.subnet-public-training.*.id, count.index)}"]
 
 	ingress {
 		protocol   = "tcp"
@@ -142,7 +142,7 @@ resource "aws_network_acl" "acl-public-training" {
 		action = "allow"
 		cidr_block =  "${aws_vpc.vpc-training.cidr_block}"
 		from_port = 0
-		to_port = 65535
+		to_port = 0
 	}
 
 	ingress {
@@ -160,7 +160,7 @@ resource "aws_network_acl" "acl-public-training" {
 		action = "deny"
 		cidr_block =  "0.0.0.0/0"
 		from_port = 0
-		to_port = 65535
+		to_port = 0
 	}
 
 
@@ -170,7 +170,7 @@ resource "aws_network_acl" "acl-public-training" {
 		action     = "allow"
 		cidr_block = "0.0.0.0/0"
 		from_port  = 0
-		to_port    = 65535
+		to_port    = 0
 	}
 
 	egress {
@@ -179,7 +179,7 @@ resource "aws_network_acl" "acl-public-training" {
 		action = "deny"
 		cidr_block =  "0.0.0.0/0"
 		from_port = 0
-		to_port = 65535
+		to_port = 0
 	}
 
 	tags = var.default_tags
@@ -189,7 +189,7 @@ resource "aws_network_acl" "acl-private-training" {
 	count = "${length(var.subnet_cidrs_private)}"
 	
 	vpc_id = "${aws_vpc.vpc-training.id}"
-	subnet_id = "${element(aws_subnet.subnet-private-training.*.id, count.index)}"
+	subnet_ids = ["${element(aws_subnet.subnet-private-training.*.id, count.index)}"]
 
 	ingress {
 		protocol   = "tcp"
@@ -224,7 +224,7 @@ resource "aws_network_acl" "acl-private-training" {
 		action = "deny"
 		cidr_block =  "0.0.0.0/0"
 		from_port = 0
-		to_port = 65535
+		to_port = 0
 	}
 
 	egress {
@@ -260,7 +260,7 @@ resource "aws_network_acl" "acl-private-training" {
 		action = "allow"
 		cidr_block =  "0.0.0.0/0"
 		from_port = 0
-		to_port = 65535
+		to_port = 0
 	}
 
 	egress {
@@ -269,7 +269,7 @@ resource "aws_network_acl" "acl-private-training" {
 		action = "deny"
 		cidr_block =  "0.0.0.0/0"
 		from_port = 0
-		to_port = 65535
+		to_port = 0
 	}
 
 	tags = var.default_tags
@@ -387,37 +387,11 @@ resource "aws_security_group_rule" "training-lb-sg-rule-ui-outbound" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-
-resource "aws_security_group" "training-lb-api-sg" {
-  name        = "training-lb-api-sg"
-  description = "Allow all needed ports for internal loadbalancer"
-  vpc_id      = "${aws_vpc.vpc-training.id}"
-}
-
-resource "aws_security_group_rule" "training-lb-sg-rule-api" {
-  security_group_id = "${aws_security_group.training-lb-api-sg.id}"
-  type              = "ingress"
-  from_port         = 3000
-  to_port           = 3000
-  protocol          = "TCP"
-  cidr_blocks       = ["10.0.0.0/16"]
-}
-
-resource "aws_security_group_rule" "training-lb-sg-rule-api-outbound" {
-  security_group_id = "${aws_security_group.training-lb-api-sg.id}"
-  type              = "egress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"]
-}
-
 resource "aws_lb" "training-i-lb" {
   name               = "training-i-lb"
-  internal           = false
+  internal           = true
   load_balancer_type = "network"
-  security_groups = ["${aws_security_group.training-lb-api-sg.id}"]
-  subnets            = ["${aws_subnet.subnet-private-training.*.id}"]
+  subnets            = flatten(["${aws_subnet.subnet-private-training.*.id}"])
   
   enable_deletion_protection = false
   
@@ -448,9 +422,8 @@ resource "aws_lb_listener" "training-lb-listener-api" {
 resource "aws_lb" "training-if-lb" {
   name               = "training-if-lb"
   internal           = false
-  load_balancer_type = "network"
-  security_groups = ["${aws_security_group.training-lb-ui-sg.id}"]
-  subnets            = ["${aws_subnet.subnet-public-training.*.id}"]
+  load_balancer_type = "application"
+  subnets            = flatten(["${aws_subnet.subnet-public-training.*.id}"])
   
   enable_deletion_protection = false
   
@@ -496,7 +469,7 @@ resource "aws_autoscaling_group" "training-ui-as" {
   min_size             = 2
   max_size             = 2
   desired_capacity     = 2
-  vpc_zone_identifier  = ["${aws_subnet.subnet-public-training.*.id}"]
+  vpc_zone_identifier  = flatten(["${aws_subnet.subnet-public-training.*.id}"])
   target_group_arns    = ["${aws_lb_target_group.tg-ui-training.arn}"]
 
   lifecycle {
@@ -523,7 +496,7 @@ resource "aws_autoscaling_group" "training-api-as" {
   min_size             = 2
   max_size             = 2
   desired_capacity     = 2
-  vpc_zone_identifier  = ["${aws_subnet.subnet-private-training.*.id}"]
+  vpc_zone_identifier  = flatten(["${aws_subnet.subnet-private-training.*.id}"])
   target_group_arns    = ["${aws_lb_target_group.tg-api-training.arn}"]
 
   lifecycle {
