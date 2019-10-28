@@ -17,6 +17,7 @@ resource "aws_subnet" "subnet-public-training" {
 	vpc_id = "${aws_vpc.vpc-training.id}"
 	cidr_block = "${var.subnet_cidrs_public[count.index]}"
 	availability_zone = "${var.availability_zones[count.index]}"
+	map_public_ip_on_launch = true
 
 	tags = var.default_tags
 }
@@ -423,6 +424,7 @@ resource "aws_lb" "training-if-lb" {
   name               = "training-if-lb"
   internal           = false
   load_balancer_type = "application"
+  security_groups    = ["${aws_security_group.training-lb-ui-sg.id}"]
   subnets            = flatten(["${aws_subnet.subnet-public-training.*.id}"])
   
   enable_deletion_protection = false
