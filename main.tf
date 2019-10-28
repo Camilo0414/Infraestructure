@@ -370,7 +370,7 @@ resource "aws_security_group" "training-lb-ui-sg" {
 // Rules for security group
 
 resource "aws_security_group_rule" "training-lb-sg-rule-ui" {
-  security_group_id = "${aws_security_group.training-lb-sg.id}"
+  security_group_id = "${aws_security_group.training-lb-ui-sg.id}"
   type              = "ingress"
   from_port         = 80
   to_port           = 80
@@ -379,7 +379,7 @@ resource "aws_security_group_rule" "training-lb-sg-rule-ui" {
 }
 
 resource "aws_security_group_rule" "training-lb-sg-rule-ui-outbound" {
-  security_group_id = "${aws_security_group.training-lb-sg.id}"
+  security_group_id = "${aws_security_group.training-lb-ui-sg.id}"
   type              = "egress"
   from_port         = 0
   to_port           = 0
@@ -404,7 +404,7 @@ resource "aws_security_group_rule" "training-lb-sg-rule-api" {
 }
 
 resource "aws_security_group_rule" "training-lb-sg-rule-api-outbound" {
-  security_group_id = "${aws_security_group.training-lb-sg.id}"
+  security_group_id = "${aws_security_group.training-lb-api-sg.id}"
   type              = "egress"
   from_port         = 0
   to_port           = 0
