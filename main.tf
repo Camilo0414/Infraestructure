@@ -317,19 +317,44 @@ resource "aws_network_acl" "acl-private-training" {
 	}
 }
 
-resource "aws_security_group" "allow_tls" {
-  name        = "allow_tls"
-  description = "Allow TLS inbound traffic"
-  vpc_id      = "${aws_vpc.main.id}"
+resource "aws_security_group" "public-subnets-security-group" {
+  name        = "public-subnets-security-group"
+  description = "Allow the proper traffic for the front instances"
+  vpc_id      = "${aws_vpc.vpc-training.id}"
 
   ingress {
-    # TLS (change to whatever ports you need)
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = 	["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = 	["181.129.163.202/32"]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = 	["10.0.0.0/16"]
+  }
+
+  ingress {
+    from_port   = 3030
+    to_port     = 3030
+    protocol    = "tcp"
+    cidr_blocks = 	["10.0.0.0/16"]
+  }
+
+  ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    # Please restrict your ingress to only necessary IPs and ports.
-    # Opening to 0.0.0.0/0 can lead to security vulnerabilities.
-    cidr_blocks = # add a CIDR block here
+    cidr_blocks = 	["0.0.0.0/0"]
   }
 
   egress {
@@ -337,6 +362,198 @@ resource "aws_security_group" "allow_tls" {
     to_port         = 0
     protocol        = "-1"
     cidr_blocks     = ["0.0.0.0/0"]
-    prefix_list_ids = ["pl-12c4e678"]
+  }
+
+  tags = {
+		responsible = var.responsible
+		project = var.project
+	}
+}
+
+resource "aws_security_group" "private-subnets-security-group" {
+  name        = "private-subnets-security-group"
+  description = "Allow the proper traffic for the front instances"
+  vpc_id      = "${aws_vpc.vpc-training.id}"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = 	["181.129.163.202/32"]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = 	["10.0.0.0/16"]
+  }
+
+  ingress {
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = 	["10.0.0.0/16"]
+  }
+
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks     = ["0.0.0.0/0"]
+  }
+
+  tags = {
+		responsible = var.responsible
+		project = var.project
+	}
+}
+
+resource "aws_security_group" "training-lb-sg" {
+  name        = "training-lb-sg"
+  description = "Allow all needed ports for internet-facing loadbalancer"
+  vpc_id      = "${aws_vpc.vpc-training.id}"
+}
+
+// Rules for security group
+resource "aws_security_group_rule" "training-lb-sg-rule-api" {
+  security_group_id = "${aws_security_group.training-lb-sg.id}"
+  type              = "ingress"
+  from_port         = 3000
+  to_port           = 3000
+  protocol          = "TCP"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "training-lb-sg-rule-ui" {
+  security_group_id = "${aws_security_group.training-lb-sg.id}"
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "TCP"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "perf-explorer-lb-sg-rule-outbound" {
+  security_group_id = "${aws_security_group.perf-explorer-lb-sg.id}"
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_lb" "training-lb" {
+  name               = "training-lb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups = ["${aws_security_group.training-lb-sg.id}"]
+  subnets            = ["${aws_subnet.subnet-public-training.*.id}", "${aws_subnet.subnet-private-training.*.id}"]
+  
+  enable_deletion_protection = false
+  
+  tags = {
+		responsible = var.responsible
+		project = var.project
+	}
+}
+
+resource "aws_lb_target_group" "tg-ui-training" {
+  name     = "tg-ui-training"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = "${aws_vpc.vpc-training.id}"
+
+  tags = {
+		responsible = var.responsible
+		project = var.project
+	}
+}
+
+resource "aws_lb_listener" "training-lb-listener-ui" {
+  load_balancer_arn = "${aws_lb.training-lb.arn}"
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = "${aws_lb_target_group.tg-ui-training.arn}"
+  }
+}
+
+resource "aws_lb_target_group" "tg-api-training" {
+  name     = "tg-api-training"
+  port     = 3000
+  protocol = "TCP"
+  vpc_id   = "${aws_vpc.vpc-training.id}"
+
+  tags = {
+		responsible = var.responsible
+		project = var.project
+	}
+}
+
+resource "aws_lb_listener" "training-lb-listener-api" {
+  load_balancer_arn = "${aws_lb.training-lb.arn}"
+  port              = "3000"
+  protocol          = "TCP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = "${aws_lb_target_group.tg-api-training.arn}"
+  }
+}
+
+resource "aws_launch_configuration" "training-ui-lc" {
+  name_prefix          = "training-ui-lc"
+  image_id             = "ami-04cce3f889216ffd0"
+  instance_type        = "t2.micro"
+  security_groups      = ["${aws_security_group.public-subnets-security-group.id}"]
+  key_name             = "keypair-training"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+// Autoscaling group
+resource "aws_autoscaling_group" "training-ui-as" {
+  name                 = "training-ui-as"
+  launch_configuration = "${aws_launch_configuration.training-ui-lc.name}"
+  min_size             = 2
+  max_size             = 2
+  desired_capacity     = 2
+  vpc_zone_identifier  = ["${aws_subnet.subnet-public-training.*.id}"]
+  target_group_arns    = ["${aws_lb_target_group.tg-ui-training.arn}"]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_launch_configuration" "training-api-lc" {
+  name_prefix          = "training-api-lc"
+  image_id             = "ami-04cce3f889216ffd0"
+  instance_type        = "t2.micro"
+  security_groups      = ["${aws_security_group.private-subnets-security-group.id}"]
+  key_name             = "keypair-training"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+// Autoscaling group
+resource "aws_autoscaling_group" "training-api-as" {
+  name                 = "training-api-as"
+  launch_configuration = "${aws_launch_configuration.training-api-lc.name}"
+  min_size             = 2
+  max_size             = 2
+  desired_capacity     = 2
+  vpc_zone_identifier  = ["${aws_subnet.subnet-private-training.*.id}"]
+  target_group_arns    = ["${aws_lb_target_group.tg-api-training.arn}"]
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
