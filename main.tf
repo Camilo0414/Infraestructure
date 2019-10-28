@@ -58,8 +58,6 @@ resource "aws_route_table" "rt-public-training" {
 resource "aws_main_route_table_association" "rt-main-public-training" {
   vpc_id         = "${aws_vpc.vpc-training.id}"
   route_table_id = "${aws_route_table.rt-public-training.id}"
-
-  tags = var.default_tags
 }
 
 resource "aws_route_table_association" "rt-public-training" {
@@ -67,8 +65,6 @@ resource "aws_route_table_association" "rt-public-training" {
 	
 	subnet_id      = "${element(aws_subnet.subnet-public-training.*.id, count.index)}"
 	route_table_id = "${aws_route_table.rt-public-training.id}"
-
-	tags = var.default_tags
 }
 
 resource "aws_route_table" "rt-private-training" {
@@ -87,8 +83,6 @@ resource "aws_route_table_association" "rt-private-training" {
 	
 	subnet_id      = "${element(aws_subnet.subnet-private-training.*.id, count.index)}"
 	route_table_id = "${aws_route_table.rt-private-training.id}"
-
-	tags = var.default_tags
 }
 
 resource "aws_network_acl" "acl-public-training" {
@@ -392,8 +386,8 @@ resource "aws_security_group_rule" "training-lb-sg-rule-ui" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group_rule" "perf-explorer-lb-sg-rule-outbound" {
-  security_group_id = "${aws_security_group.perf-explorer-lb-sg.id}"
+resource "aws_security_group_rule" "training-lb-sg-rule-outbound" {
+  security_group_id = "${aws_security_group.training-lb-sg.id}"
   type              = "egress"
   from_port         = 0
   to_port           = 0
