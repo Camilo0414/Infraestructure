@@ -8,8 +8,8 @@ resource "aws_vpc" "vpc-training" {
 	cidr_block       = "10.0.0.0/16"
 	
 	tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
@@ -22,8 +22,8 @@ resource "aws_subnet" "subnet-public-training" {
 	availability_zone = "${var.availability_zones[count.index]}"
 
 	tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
@@ -35,8 +35,8 @@ resource "aws_subnet" "subnet-private-training" {
 	availability_zone = "${var.availability_zones[count.index]}"
 
 	tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
@@ -44,8 +44,8 @@ resource "aws_internet_gateway" "igw-training" {
 	vpc_id = "${aws_vpc.vpc-training.id}"
 	
 	tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
@@ -54,8 +54,8 @@ resource "aws_nat_gateway" "natgw-training" {
   subnet_id     = "${lookup(element(aws_subnet.subnet-public-training, 0),"id", "")}"
 
   tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
@@ -68,8 +68,8 @@ resource "aws_route_table" "rt-public-training" {
 	}
 
 	tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
@@ -78,8 +78,8 @@ resource "aws_main_route_table_association" "rt-main-public-training" {
   route_table_id = "${aws_route_table.rt-public-training.id}"
 
   tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
@@ -90,8 +90,8 @@ resource "aws_route_table_association" "rt-public-training" {
 	route_table_id = "${aws_route_table.rt-public-training.id}"
 
 	tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
@@ -104,8 +104,8 @@ resource "aws_route_table" "rt-private-training" {
 	}
 
 	tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
@@ -116,8 +116,8 @@ resource "aws_route_table_association" "rt-private-training" {
 	route_table_id = "${aws_route_table.rt-private-training.id}"
 
 	tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
@@ -219,8 +219,8 @@ resource "aws_network_acl" "acl-public-training" {
 	}
 
 	tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
@@ -312,8 +312,8 @@ resource "aws_network_acl" "acl-private-training" {
 	}
 
 	tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
@@ -365,8 +365,8 @@ resource "aws_security_group" "public-subnets-security-group" {
   }
 
   tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
@@ -404,8 +404,8 @@ resource "aws_security_group" "private-subnets-security-group" {
   }
 
   tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
@@ -453,8 +453,8 @@ resource "aws_lb" "training-lb" {
   enable_deletion_protection = false
   
   tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
@@ -465,8 +465,8 @@ resource "aws_lb_target_group" "tg-ui-training" {
   vpc_id   = "${aws_vpc.vpc-training.id}"
 
   tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
@@ -488,8 +488,8 @@ resource "aws_lb_target_group" "tg-api-training" {
   vpc_id   = "${aws_vpc.vpc-training.id}"
 
   tags = {
-		responsible = var.responsible
-		project = var.project
+		responsible = jibanezn
+		project = jibanezn-rampup
 	}
 }
 
