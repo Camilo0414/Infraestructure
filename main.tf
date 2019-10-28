@@ -7,10 +7,7 @@ provider "aws" {
 resource "aws_vpc" "vpc-training" {
 	cidr_block       = "10.0.0.0/16"
 	
-	tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+	tags = var.default_tags
 }
 
 
@@ -21,10 +18,7 @@ resource "aws_subnet" "subnet-public-training" {
 	cidr_block = "${var.subnet_cidrs_public[count.index]}"
 	availability_zone = "${var.availability_zones[count.index]}"
 
-	tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+	tags = var.default_tags
 }
 
 resource "aws_subnet" "subnet-private-training" {
@@ -34,29 +28,20 @@ resource "aws_subnet" "subnet-private-training" {
 	cidr_block = "${var.subnet_cidrs_private[count.index]}"
 	availability_zone = "${var.availability_zones[count.index]}"
 
-	tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+	tags = var.default_tags
 }
 
 resource "aws_internet_gateway" "igw-training" {
 	vpc_id = "${aws_vpc.vpc-training.id}"
 	
-	tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+	tags = var.default_tags
 }
 
 resource "aws_nat_gateway" "natgw-training" {
   allocation_id = "eipalloc-09c2fa75915c0a97f"
   subnet_id     = "${lookup(element(aws_subnet.subnet-public-training, 0),"id", "")}"
 
-  tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+  tags = var.default_tags
 }
 
 resource "aws_route_table" "rt-public-training" {
@@ -67,20 +52,14 @@ resource "aws_route_table" "rt-public-training" {
 		gateway_id = "${aws_internet_gateway.igw-training.id}"
 	}
 
-	tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+	tags = var.default_tags
 }
 
 resource "aws_main_route_table_association" "rt-main-public-training" {
   vpc_id         = "${aws_vpc.vpc-training.id}"
   route_table_id = "${aws_route_table.rt-public-training.id}"
 
-  tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+  tags = var.default_tags
 }
 
 resource "aws_route_table_association" "rt-public-training" {
@@ -89,10 +68,7 @@ resource "aws_route_table_association" "rt-public-training" {
 	subnet_id      = "${element(aws_subnet.subnet-public-training.*.id, count.index)}"
 	route_table_id = "${aws_route_table.rt-public-training.id}"
 
-	tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+	tags = var.default_tags
 }
 
 resource "aws_route_table" "rt-private-training" {
@@ -103,10 +79,7 @@ resource "aws_route_table" "rt-private-training" {
 		nat_gateway_id = "${aws_nat_gateway.natgw-training.id}"
 	}
 
-	tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+	tags = var.default_tags
 }
 
 resource "aws_route_table_association" "rt-private-training" {
@@ -115,10 +88,7 @@ resource "aws_route_table_association" "rt-private-training" {
 	subnet_id      = "${element(aws_subnet.subnet-private-training.*.id, count.index)}"
 	route_table_id = "${aws_route_table.rt-private-training.id}"
 
-	tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+	tags = var.default_tags
 }
 
 resource "aws_network_acl" "acl-public-training" {
@@ -218,10 +188,7 @@ resource "aws_network_acl" "acl-public-training" {
 		to_port = 65535
 	}
 
-	tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+	tags = var.default_tags
 }
 
 resource "aws_network_acl" "acl-private-training" {
@@ -311,10 +278,7 @@ resource "aws_network_acl" "acl-private-training" {
 		to_port = 65535
 	}
 
-	tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+	tags = var.default_tags
 }
 
 resource "aws_security_group" "public-subnets-security-group" {
@@ -364,10 +328,7 @@ resource "aws_security_group" "public-subnets-security-group" {
     cidr_blocks     = ["0.0.0.0/0"]
   }
 
-  tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+  tags = var.default_tags
 }
 
 resource "aws_security_group" "private-subnets-security-group" {
@@ -403,10 +364,7 @@ resource "aws_security_group" "private-subnets-security-group" {
     cidr_blocks     = ["0.0.0.0/0"]
   }
 
-  tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+  tags = var.default_tags
 }
 
 resource "aws_security_group" "training-lb-sg" {
@@ -452,10 +410,7 @@ resource "aws_lb" "training-lb" {
   
   enable_deletion_protection = false
   
-  tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+  tags = var.default_tags
 }
 
 resource "aws_lb_target_group" "tg-ui-training" {
@@ -464,10 +419,7 @@ resource "aws_lb_target_group" "tg-ui-training" {
   protocol = "HTTP"
   vpc_id   = "${aws_vpc.vpc-training.id}"
 
-  tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+  tags = var.default_tags
 }
 
 resource "aws_lb_listener" "training-lb-listener-ui" {
@@ -487,10 +439,7 @@ resource "aws_lb_target_group" "tg-api-training" {
   protocol = "TCP"
   vpc_id   = "${aws_vpc.vpc-training.id}"
 
-  tags = {
-		responsible = jibanezn
-		project = jibanezn-rampup
-	}
+  tags = var.default_tags
 }
 
 resource "aws_lb_listener" "training-lb-listener-api" {
