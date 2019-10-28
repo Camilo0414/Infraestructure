@@ -163,7 +163,7 @@ resource "aws_network_acl" "acl-public-training" {
 		to_port    = 443
 	}
 
-	ingress = {
+	ingress {
 		protocol = "tcp"
 		rule_no = 160
 		action = "allow"
@@ -172,7 +172,7 @@ resource "aws_network_acl" "acl-public-training" {
 		to_port = 65535
 	}
 
-	ingress = {
+	ingress {
 		protocol = "all"
 		rule_no = 180
 		action = "allow"
@@ -181,7 +181,7 @@ resource "aws_network_acl" "acl-public-training" {
 		to_port = 65535
 	}
 
-	ingress = {
+	ingress {
 		protocol = "tcp"
 		rule_no = 200
 		action = "allow"
@@ -190,7 +190,7 @@ resource "aws_network_acl" "acl-public-training" {
 		to_port = 3030
 	}
 
-	ingress = {
+	ingress {
 		protocol = "all"
 		rule_no = 220
 		action = "deny"
@@ -209,7 +209,7 @@ resource "aws_network_acl" "acl-public-training" {
 		to_port    = 65535
 	}
 
-	egress = {
+	egress {
 		protocol = "all"
 		rule_no = 120
 		action = "deny"
@@ -257,7 +257,7 @@ resource "aws_network_acl" "acl-private-training" {
 		to_port    = 65535
 	}
 
-	ingress = {
+	ingress {
 		protocol = "all"
 		rule_no = 160
 		action = "deny"
@@ -293,7 +293,7 @@ resource "aws_network_acl" "acl-private-training" {
 		to_port    = 65535
 	}
 
-	egress = {
+	egress {
 		protocol = "all"
 		rule_no = 160
 		action = "allow"
@@ -302,7 +302,7 @@ resource "aws_network_acl" "acl-private-training" {
 		to_port = 65535
 	}
 
-	egress = {
+	egress {
 		protocol = "all"
 		rule_no = 180
 		action = "deny"
