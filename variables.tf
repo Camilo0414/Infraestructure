@@ -1,8 +1,3 @@
-variable "tags" {
-    responsible = "jibanezn"
-    project = "jibanezn-rampup"
-}
-
 variable "subnet_cidrs_public" {
     description = "Subnet CIDR's for public subnets"
     default = ["10.0.1.0/24", "10.0.4.0/24"]
