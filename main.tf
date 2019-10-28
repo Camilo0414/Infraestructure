@@ -361,21 +361,13 @@ resource "aws_security_group" "private-subnets-security-group" {
   tags = var.default_tags
 }
 
-resource "aws_security_group" "training-lb-sg" {
-  name        = "training-lb-sg"
+resource "aws_security_group" "training-lb-ui-sg" {
+  name        = "training-lb-ui-sg"
   description = "Allow all needed ports for internet-facing loadbalancer"
   vpc_id      = "${aws_vpc.vpc-training.id}"
 }
 
 // Rules for security group
-resource "aws_security_group_rule" "training-lb-sg-rule-api" {
-  security_group_id = "${aws_security_group.training-lb-sg.id}"
-  type              = "ingress"
-  from_port         = 3000
-  to_port           = 3000
-  protocol          = "TCP"
-  cidr_blocks       = ["0.0.0.0/0"]
-}
 
 resource "aws_security_group_rule" "training-lb-sg-rule-ui" {
   security_group_id = "${aws_security_group.training-lb-sg.id}"
@@ -386,7 +378,7 @@ resource "aws_security_group_rule" "training-lb-sg-rule-ui" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group_rule" "training-lb-sg-rule-outbound" {
+resource "aws_security_group_rule" "training-lb-sg-rule-ui-outbound" {
   security_group_id = "${aws_security_group.training-lb-sg.id}"
   type              = "egress"
   from_port         = 0
@@ -395,12 +387,70 @@ resource "aws_security_group_rule" "training-lb-sg-rule-outbound" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-resource "aws_lb" "training-lb" {
-  name               = "training-lb"
+
+resource "aws_security_group" "training-lb-api-sg" {
+  name        = "training-lb-api-sg"
+  description = "Allow all needed ports for internal loadbalancer"
+  vpc_id      = "${aws_vpc.vpc-training.id}"
+}
+
+resource "aws_security_group_rule" "training-lb-sg-rule-api" {
+  security_group_id = "${aws_security_group.training-lb-api-sg.id}"
+  type              = "ingress"
+  from_port         = 3000
+  to_port           = 3000
+  protocol          = "TCP"
+  cidr_blocks       = ["10.0.0.0/16"]
+}
+
+resource "aws_security_group_rule" "training-lb-sg-rule-api-outbound" {
+  security_group_id = "${aws_security_group.training-lb-sg.id}"
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_lb" "training-i-lb" {
+  name               = "training-i-lb"
   internal           = false
-  load_balancer_type = "application"
-  security_groups = ["${aws_security_group.training-lb-sg.id}"]
-  subnets            = ["${aws_subnet.subnet-public-training.*.id}", "${aws_subnet.subnet-private-training.*.id}"]
+  load_balancer_type = "network"
+  security_groups = ["${aws_security_group.training-lb-api-sg.id}"]
+  subnets            = ["${aws_subnet.subnet-private-training.*.id}"]
+  
+  enable_deletion_protection = false
+  
+  tags = var.default_tags
+}
+
+resource "aws_lb_target_group" "tg-api-training" {
+  name     = "tg-api-training"
+  port     = 3000
+  protocol = "TCP"
+  vpc_id   = "${aws_vpc.vpc-training.id}"
+
+  tags = var.default_tags
+}
+
+resource "aws_lb_listener" "training-lb-listener-api" {
+  load_balancer_arn = "${aws_lb.training-i-lb.arn}"
+  port              = "3000"
+  protocol          = "TCP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = "${aws_lb_target_group.tg-api-training.arn}"
+  }
+}
+
+
+resource "aws_lb" "training-if-lb" {
+  name               = "training-if-lb"
+  internal           = false
+  load_balancer_type = "network"
+  security_groups = ["${aws_security_group.training-lb-ui-sg.id}"]
+  subnets            = ["${aws_subnet.subnet-public-training.*.id}"]
   
   enable_deletion_protection = false
   
@@ -417,33 +467,13 @@ resource "aws_lb_target_group" "tg-ui-training" {
 }
 
 resource "aws_lb_listener" "training-lb-listener-ui" {
-  load_balancer_arn = "${aws_lb.training-lb.arn}"
+  load_balancer_arn = "${aws_lb.training-if-lb.arn}"
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
     target_group_arn = "${aws_lb_target_group.tg-ui-training.arn}"
-  }
-}
-
-resource "aws_lb_target_group" "tg-api-training" {
-  name     = "tg-api-training"
-  port     = 3000
-  protocol = "TCP"
-  vpc_id   = "${aws_vpc.vpc-training.id}"
-
-  tags = var.default_tags
-}
-
-resource "aws_lb_listener" "training-lb-listener-api" {
-  load_balancer_arn = "${aws_lb.training-lb.arn}"
-  port              = "3000"
-  protocol          = "TCP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = "${aws_lb_target_group.tg-api-training.arn}"
   }
 }
 
