@@ -1,9 +1,11 @@
 variable "default_tags" {
     type = "map"
+    
     default = {
         responsible: "jibanezn",
         project: "jibanezn-rampup"
     }
+    
 }
 
 variable "subnet_cidrs_public" {

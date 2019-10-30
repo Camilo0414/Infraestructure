@@ -477,6 +477,18 @@ resource "aws_autoscaling_group" "training-ui-as" {
   lifecycle {
     create_before_destroy = true
   }
+  tags = [
+    {
+      key                 = "responsible"
+      value               = "jibanezn"
+      propagate_at_launch = true
+    },
+    {
+      key                 = "project"
+      value               = "jibanezn-rampup"
+      propagate_at_launch = true
+    },
+  ]
 }
 
 resource "aws_launch_configuration" "training-api-lc" {
@@ -504,4 +516,29 @@ resource "aws_autoscaling_group" "training-api-as" {
   lifecycle {
     create_before_destroy = true
   }
+
+   tags = [
+    {
+      key                 = "responsible"
+      value               = "jibanezn"
+      propagate_at_launch = true
+    },
+    {
+      key                 = "project"
+      value               = "jibanezn-rampup"
+      propagate_at_launch = true
+    },
+  ]
+}
+
+//Jenkins server
+resource "aws_instance" "jenkins_instance" {
+	
+	ami = "ami-04cce3f889216ffd0"
+  	instance_type        = "t2.micro"
+	vpc_security_group_ids = ["${aws_security_group.public-subnets-security-group.id}"]
+	subnet_id = "${lookup(element(aws_subnet.subnet-public-training, 0),"id", "")}"
+	associate_public_ip_address = true
+
+    tags = var.default_tags
 }
