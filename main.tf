@@ -540,5 +540,7 @@ resource "aws_instance" "jenkins_instance" {
 	subnet_id = "${lookup(element(aws_subnet.subnet-public-training, 0),"id", "")}"
 	associate_public_ip_address = true
 
-    tags = var.default_tags
+    tags = var.jenkins_tags
+
+	volume_tags = var.default_tags
 }
