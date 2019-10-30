@@ -155,16 +155,6 @@ resource "aws_network_acl" "acl-public-training" {
 		to_port = 3030
 	}
 
-	ingress {
-		protocol = "all"
-		rule_no = 220
-		action = "deny"
-		cidr_block =  "0.0.0.0/0"
-		from_port = 0
-		to_port = 0
-	}
-
-
 	egress {
 		protocol   = "all"
 		rule_no    = 100
@@ -172,15 +162,6 @@ resource "aws_network_acl" "acl-public-training" {
 		cidr_block = "0.0.0.0/0"
 		from_port  = 0
 		to_port    = 0
-	}
-
-	egress {
-		protocol = "all"
-		rule_no = 120
-		action = "deny"
-		cidr_block =  "0.0.0.0/0"
-		from_port = 0
-		to_port = 0
 	}
 
 	tags = var.default_tags
@@ -219,15 +200,6 @@ resource "aws_network_acl" "acl-private-training" {
 		to_port    = 65535
 	}
 
-	ingress {
-		protocol = "all"
-		rule_no = 160
-		action = "deny"
-		cidr_block =  "0.0.0.0/0"
-		from_port = 0
-		to_port = 0
-	}
-
 	egress {
 		protocol   = "tcp"
 		rule_no    = 100
@@ -259,15 +231,6 @@ resource "aws_network_acl" "acl-private-training" {
 		protocol = "all"
 		rule_no = 160
 		action = "allow"
-		cidr_block =  "0.0.0.0/0"
-		from_port = 0
-		to_port = 0
-	}
-
-	egress {
-		protocol = "all"
-		rule_no = 180
-		action = "deny"
 		cidr_block =  "0.0.0.0/0"
 		from_port = 0
 		to_port = 0
