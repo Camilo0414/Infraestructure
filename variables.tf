@@ -1,9 +1,22 @@
 variable "default_tags" {
     type = "map"
+    
     default = {
         responsible: "jibanezn",
         project: "jibanezn-rampup"
     }
+    
+}
+
+variable "jenkins_tags" {
+    type = "map"
+    
+    default = {
+        Name: "Jenkins_server",
+        responsible: "jibanezn",
+        project: "jibanezn-rampup"
+    }
+    
 }
 
 variable "subnet_cidrs_public" {

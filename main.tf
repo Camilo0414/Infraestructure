@@ -155,16 +155,6 @@ resource "aws_network_acl" "acl-public-training" {
 		to_port = 3030
 	}
 
-	ingress {
-		protocol = "all"
-		rule_no = 220
-		action = "deny"
-		cidr_block =  "0.0.0.0/0"
-		from_port = 0
-		to_port = 0
-	}
-
-
 	egress {
 		protocol   = "all"
 		rule_no    = 100
@@ -172,15 +162,6 @@ resource "aws_network_acl" "acl-public-training" {
 		cidr_block = "0.0.0.0/0"
 		from_port  = 0
 		to_port    = 0
-	}
-
-	egress {
-		protocol = "all"
-		rule_no = 120
-		action = "deny"
-		cidr_block =  "0.0.0.0/0"
-		from_port = 0
-		to_port = 0
 	}
 
 	tags = var.default_tags
@@ -219,15 +200,6 @@ resource "aws_network_acl" "acl-private-training" {
 		to_port    = 65535
 	}
 
-	ingress {
-		protocol = "all"
-		rule_no = 160
-		action = "deny"
-		cidr_block =  "0.0.0.0/0"
-		from_port = 0
-		to_port = 0
-	}
-
 	egress {
 		protocol   = "tcp"
 		rule_no    = 100
@@ -259,15 +231,6 @@ resource "aws_network_acl" "acl-private-training" {
 		protocol = "all"
 		rule_no = 160
 		action = "allow"
-		cidr_block =  "0.0.0.0/0"
-		from_port = 0
-		to_port = 0
-	}
-
-	egress {
-		protocol = "all"
-		rule_no = 180
-		action = "deny"
 		cidr_block =  "0.0.0.0/0"
 		from_port = 0
 		to_port = 0
@@ -477,6 +440,18 @@ resource "aws_autoscaling_group" "training-ui-as" {
   lifecycle {
     create_before_destroy = true
   }
+  tags = [
+    {
+      key                 = "responsible"
+      value               = "jibanezn"
+      propagate_at_launch = true
+    },
+    {
+      key                 = "project"
+      value               = "jibanezn-rampup"
+      propagate_at_launch = true
+    },
+  ]
 }
 
 resource "aws_launch_configuration" "training-api-lc" {
@@ -504,4 +479,31 @@ resource "aws_autoscaling_group" "training-api-as" {
   lifecycle {
     create_before_destroy = true
   }
+
+   tags = [
+    {
+      key                 = "responsible"
+      value               = "jibanezn"
+      propagate_at_launch = true
+    },
+    {
+      key                 = "project"
+      value               = "jibanezn-rampup"
+      propagate_at_launch = true
+    },
+  ]
+}
+
+//Jenkins server
+resource "aws_instance" "jenkins_instance" {
+	
+	ami = "ami-04cce3f889216ffd0"
+  	instance_type        = "t2.micro"
+	vpc_security_group_ids = ["${aws_security_group.public-subnets-security-group.id}"]
+	subnet_id = "${lookup(element(aws_subnet.subnet-public-training, 0),"id", "")}"
+	associate_public_ip_address = true
+
+    tags = var.jenkins_tags
+
+	volume_tags = var.default_tags
 }
