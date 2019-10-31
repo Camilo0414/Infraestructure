@@ -325,6 +325,56 @@ resource "aws_security_group" "private-subnets-security-group" {
   tags = var.default_tags
 }
 
+resource "aws_security_group" "jenkins-server-security-group" {
+  name        = "jenkins-server-security-group"
+  description = "Allow the proper traffic for the jenkins-server instance"
+  vpc_id      = "${aws_vpc.vpc-training.id}"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = 	["181.129.163.202/32"]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = 	["10.0.0.0/16"]
+  }
+
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = 	["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "http"
+    cidr_blocks = 	["0.0.0.0/0"]
+  }
+
+   ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "https"
+    cidr_blocks = 	["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks     = ["0.0.0.0/0"]
+  }
+
+  tags = var.default_tags
+}
+
 resource "aws_security_group" "training-lb-ui-sg" {
   name        = "training-lb-ui-sg"
   description = "Allow all needed ports for internet-facing loadbalancer"
@@ -498,12 +548,12 @@ resource "aws_autoscaling_group" "training-api-as" {
 resource "aws_instance" "jenkins_instance" {
 	
 	ami = "ami-04cce3f889216ffd0"
-  	instance_type        = "t2.micro"
-	vpc_security_group_ids = ["${aws_security_group.public-subnets-security-group.id}"]
+  instance_type        = "t2.micro"
+	vpc_security_group_ids = ["${aws_security_group.jenkins-server-security-group.id}"]
 	subnet_id = "${lookup(element(aws_subnet.subnet-public-training, 0),"id", "")}"
 	associate_public_ip_address = true
 
-    tags = var.jenkins_tags
+  tags = var.jenkins_tags
 
 	volume_tags = var.default_tags
 }
