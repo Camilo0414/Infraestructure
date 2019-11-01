@@ -27,3 +27,8 @@
     - name: install npm
       yum: name=npm
 
+    - name: Install forever (running nodejs as daemon)
+      npm:
+              name: forever
+              global: yes
+              state: present
