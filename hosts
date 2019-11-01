@@ -1,5 +1,5 @@
 [uiservers]
-front_one ansible_host=10-0-4-220
+front_one ansible_host=10.0.4.220
 front_two ansible_host=10.0.1.189
 
 [apiservers]
