@@ -79,12 +79,12 @@ resource "aws_route_table" "rt-private-training" {
 	tags = var.default_tags
 }
 
-//resource "aws_route_table_association" "rt-private-training" {
-	//count = "${length(var.subnet_cidrs_private)}"
+resource "aws_route_table_association" "rt-private-training" {
+  count = "${length(var.subnet_cidrs_private)}"
 	
-	//subnet_id      = "${element(aws_subnet.subnet-private-training.*.id, count.index)}"
-	//route_table_id = "${aws_route_table.rt-private-training.id}"
-//}
+	subnet_id      = "${element(aws_subnet.subnet-private-training.*.id, count.index)}"
+	route_table_id = "${aws_route_table.rt-private-training.id}"
+}
 
 resource "aws_network_acl" "acl-public-training" {
 	count = "${length(var.subnet_cidrs_public)}"
@@ -568,6 +568,7 @@ resource "aws_instance" "jenkins_instance" {
 	vpc_security_group_ids = ["${aws_security_group.jenkins-server-security-group.id}"]
 	subnet_id = "${lookup(element(aws_subnet.subnet-public-training, 0),"id", "")}"
 	associate_public_ip_address = true
+  key_name             = "keypair-training"
 
   tags = var.jenkins_tags
 
