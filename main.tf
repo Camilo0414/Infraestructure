@@ -357,6 +357,13 @@ resource "aws_security_group" "jenkins-server-security-group" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
+    cidr_blocks = 	["181.206.63.226/32"]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
     cidr_blocks = 	["10.0.0.0/16"]
   }
 
@@ -563,7 +570,7 @@ resource "aws_autoscaling_group" "training-api-as" {
 //Jenkins server
 resource "aws_instance" "jenkins_instance" {
 	
-	ami = "ami-04cce3f889216ffd0"
+	ami = "ami-04f8553ddc94f93b0"
   instance_type        = "t2.micro"
 	vpc_security_group_ids = ["${aws_security_group.jenkins-server-security-group.id}"]
 	subnet_id = "${lookup(element(aws_subnet.subnet-public-training, 0),"id", "")}"
