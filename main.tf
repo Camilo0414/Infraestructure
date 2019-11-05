@@ -570,7 +570,7 @@ resource "aws_autoscaling_group" "training-api-as" {
 //Jenkins server
 resource "aws_instance" "jenkins_instance" {
 	
-	ami = "ami-04f8553ddc94f93b0"
+	ami = "ami-08077c4666b428e8e"
   instance_type        = "t2.micro"
 	vpc_security_group_ids = ["${aws_security_group.jenkins-server-security-group.id}"]
 	subnet_id = "${lookup(element(aws_subnet.subnet-public-training, 0),"id", "")}"
