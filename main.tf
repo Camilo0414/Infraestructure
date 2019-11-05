@@ -79,12 +79,12 @@ resource "aws_route_table" "rt-private-training" {
 	tags = var.default_tags
 }
 
-resource "aws_route_table_association" "rt-private-training" {
-	count = "${length(var.subnet_cidrs_private)}"
+//resource "aws_route_table_association" "rt-private-training" {
+	//count = "${length(var.subnet_cidrs_private)}"
 	
-	subnet_id      = "${element(aws_subnet.subnet-private-training.*.id, count.index)}"
-	route_table_id = "${aws_route_table.rt-private-training.id}"
-}
+	//subnet_id      = "${element(aws_subnet.subnet-private-training.*.id, count.index)}"
+	//route_table_id = "${aws_route_table.rt-private-training.id}"
+//}
 
 resource "aws_network_acl" "acl-public-training" {
 	count = "${length(var.subnet_cidrs_public)}"
@@ -97,6 +97,15 @@ resource "aws_network_acl" "acl-public-training" {
 		rule_no    = 100
 		action     = "allow"
 		cidr_block = "181.129.163.202/32"
+		from_port  = 22
+		to_port    = 22
+	}
+//net from home
+  ingress {
+		protocol   = "tcp"
+		rule_no    = 110
+		action     = "allow"
+		cidr_block = "181.206.63.226/32"
 		from_port  = 22
 		to_port    = 22
 	}
@@ -256,6 +265,13 @@ resource "aws_security_group" "public-subnets-security-group" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = 	["181.129.163.202/32"]
+  }
+//net from home
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = 	["181.206.63.226/32"]
   }
 
   ingress {

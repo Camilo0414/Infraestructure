@@ -26,7 +26,7 @@ variable "subnet_cidrs_public" {
 }
 
 variable "subnet_cidrs_private" {
-    description = "Subnet CIDR's for public subnets"
+    description = "Subnet CIDR's for private subnets"
     default = ["10.0.2.0/24", "10.0.3.0/24"]
     type = "list"
 }
