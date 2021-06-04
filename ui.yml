@@ -1,0 +1,34 @@
+- name: Setup ui servers
+  hosts: uiservers
+  remote_user: ec2-user
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: update all
+      yum: 
+        name: '*'
+        state: latest
+        update_only: yes
+    
+    - name: Ensure yum package 
+      yum:
+              name: amazon-linux-extras
+              state: latest
+              update_cache: yes
+    - name: Install git
+      yum: name=git state=latest
+    
+    - name: install epel-repository
+      shell: "amazon-linux-extras install epel -y"
+
+    - name: install nodejs
+      yum: name=nodejs
+    
+    - name: install npm
+      yum: name=npm
+
+    - name: Install forever (running nodejs as daemon)
+      npm:
+              name: forever
+              global: yes
+              state: present
