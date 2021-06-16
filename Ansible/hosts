@@ -1,7 +1,7 @@
 [uiservers]
-front_one ansible_host=10.0.4.220
-front_two ansible_host=10.0.1.189
+front_one ansible_host=10.0.4.x
+front_two ansible_host=10.0.1.x
 
 [apiservers]
-back_one ansible_host=10.0.3.183
-back_two ansible_host=10.0.2.173
+back_one ansible_host=10.0.3.x
+back_two ansible_host=10.0.2.x
